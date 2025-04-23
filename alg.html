@@ -1,51 +1,81 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<title>找寶藏遊戲 - 演算法比較</title>
-<style>
-  body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
-  .box-container { display: flex; flex-wrap: wrap; width: 300px; margin: 20px auto; }
-  .box {
-    width: 80px; height: 80px; margin: 5px;
-    background: #eee; display: flex; justify-content: center; align-items: center;
-    font-size: 24px; cursor: pointer; border: 2px solid #ccc;
-  }
-  .box.wrong { background: #f88; }
-  .box.correct { background: #8f8; }
-</style>
+  <meta charset="UTF-8">
+  <title>找寶藏遊戲 - 演算法比較</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .box-container { display: flex; flex-wrap: wrap; width: 300px; margin-bottom: 20px; }
+    .box { width: 50px; height: 50px; margin: 5px; background: #eee; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #ccc; }
+    .box.opened { background: #cfc; }
+    button { margin-right: 10px; margin-bottom: 10px; }
+  </style>
 </head>
 <body>
 
-<h1>找出藏著寶藏的格子！</h1>
-<p>提示：試著用不同的方法找出寶藏，看看哪個比較快！</p>
+<h1>找寶藏遊戲！</h1>
+<p>選擇一種搜尋方式，看看你能多快找到寶藏！</p>
 
-<div class="box-container" id="boxContainer"></div>
+<div>
+  <button onclick="startGame('random')">隨機搜尋</button>
+  <button onclick="startGame('linear')">線性搜尋</button>
+  <button onclick="startGame('hint')">提示搜尋</button>
+</div>
+
+<div class="box-container" id="boxes"></div>
+
+<p id="result"></p>
 
 <script>
-const container = document.getElementById('boxContainer');
-const totalBoxes = 9; // 3x3格子
-const treasureIndex = Math.floor(Math.random() * totalBoxes); // 隨機藏寶藏
+let treasureIndex;
+let openCount = 0;
+let mode = '';
+let boxes = [];
+let hintLow = 0;
+let hintHigh = 29;
 
-for (let i = 0; i < totalBoxes; i++) {
-  const box = document.createElement('div');
-  box.classList.add('box');
-  box.textContent = i + 1;
-  box.addEventListener('click', () => {
-    if (i === treasureIndex) {
-      box.classList.add('correct');
-      setTimeout(() => {
-        const message = prompt('你找到寶藏了！請輸入你使用的方法名稱（例如：順序搜尋）：');
-        if (message) {
-          alert('太棒了！你選的方法是：' + message);
-        }
-      }, 100);
-    } else {
-      box.classList.add('wrong');
-      box.style.pointerEvents = 'none'; // 點錯就不能再點
+function createBoxes() {
+  const container = document.getElementById('boxes');
+  container.innerHTML = '';
+  boxes = [];
+  for (let i = 0; i < 30; i++) {
+    const box = document.createElement('div');
+    box.className = 'box';
+    box.innerText = i + 1;
+    box.addEventListener('click', () => handleClick(i));
+    container.appendChild(box);
+    boxes.push(box);
+  }
+}
+
+function startGame(selectedMode) {
+  mode = selectedMode;
+  treasureIndex = Math.floor(Math.random() * 30);
+  openCount = 0;
+  hintLow = 0;
+  hintHigh = 29;
+  createBoxes();
+  document.getElementById('result').innerText = '開始遊戲！寶藏藏好了～';
+}
+
+function handleClick(index) {
+  if (boxes[index].classList.contains('opened')) return;
+  openCount++;
+  boxes[index].classList.add('opened');
+
+  if (index === treasureIndex) {
+    document.getElementById('result').innerText = `🎉 恭喜找到寶藏！你找了 ${openCount} 次！`;
+  } else {
+    if (mode === 'hint') {
+      if (index < treasureIndex) {
+        hintLow = Math.max(hintLow, index + 1);
+        alert(`提示：寶藏在 ${hintLow + 1} ~ ${hintHigh + 1} 之間！`);
+      } else {
+        hintHigh = Math.min(hintHigh, index - 1);
+        alert(`提示：寶藏在 ${hintLow + 1} ~ ${hintHigh + 1} 之間！`);
+      }
     }
-  });
-  container.appendChild(box);
+  }
 }
 </script>
 
