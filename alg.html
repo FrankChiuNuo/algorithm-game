@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>找寶藏遊戲 - 演算法比較</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+  .box-container { display: flex; flex-wrap: wrap; width: 300px; margin: 20px auto; }
+  .box {
+    width: 80px; height: 80px; margin: 5px;
+    background: #eee; display: flex; justify-content: center; align-items: center;
+    font-size: 24px; cursor: pointer; border: 2px solid #ccc;
+  }
+  .box.wrong { background: #f88; }
+  .box.correct { background: #8f8; }
+</style>
+</head>
+<body>
+
+<h1>找出藏著寶藏的格子！</h1>
+<p>提示：試著用不同的方法找出寶藏，看看哪個比較快！</p>
+
+<div class="box-container" id="boxContainer"></div>
+
+<script>
+const container = document.getElementById('boxContainer');
+const totalBoxes = 9; // 3x3格子
+const treasureIndex = Math.floor(Math.random() * totalBoxes); // 隨機藏寶藏
+
+for (let i = 0; i < totalBoxes; i++) {
+  const box = document.createElement('div');
+  box.classList.add('box');
+  box.textContent = i + 1;
+  box.addEventListener('click', () => {
+    if (i === treasureIndex) {
+      box.classList.add('correct');
+      setTimeout(() => {
+        const message = prompt('你找到寶藏了！請輸入你使用的方法名稱（例如：順序搜尋）：');
+        if (message) {
+          alert('太棒了！你選的方法是：' + message);
+        }
+      }, 100);
+    } else {
+      box.classList.add('wrong');
+      box.style.pointerEvents = 'none'; // 點錯就不能再點
+    }
+  });
+  container.appendChild(box);
+}
+</script>
+
+</body>
+</html>
