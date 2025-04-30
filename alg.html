@@ -59,6 +59,11 @@
       "再見": ["掰掰！下次再聊～", "祝你有美好的一天！"]
     };
 
+    // 擴展回應資料庫，增加更多問候語
+    const greetings = [
+      "你好", "嗨", "Hi", "哈囉", "安安", "早安", "嘿", "Hello", "Yo"
+    ];
+
     function handleChat() {
       const input = document.getElementById("userInput").value;
       const chatbox = document.getElementById("chatbox");
@@ -66,7 +71,7 @@
 
       let foundKey = null;
       for (let key in database) {
-        if (input.includes(key)) {
+        if (greetings.some(greeting => input.toLowerCase().includes(greeting.toLowerCase())) || input.includes(key)) {
           foundKey = key;
           const reply = database[key];
           const botReply = reply[Math.floor(Math.random() * reply.length)];
@@ -103,7 +108,7 @@
 
     function simulateAlgorithm() {
       const flow = document.getElementById("flow");
-      flow.innerHTML = `
+      flow.innerHTML = ` 
         <div class="flow-step">1️⃣ 使用者輸入：<span class="highlight">你是誰</span></div>
         <div class="flow-step">2️⃣ AI 比對每個關鍵字：找到「你是誰」✅</div>
         <div class="flow-step">3️⃣ 從資料庫中選一個回答：<strong>${database["你是誰"][0]}</strong></div>
