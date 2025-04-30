@@ -1,110 +1,138 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<title>找寶藏遊戲 - 演算法比較</title>
-<style>
-  body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
-  .box-container { display: flex; flex-wrap: wrap; width: 300px; margin: 20px auto; }
-  .box {
-    width: 80px; height: 80px; margin: 5px;
-    background: #eee; display: flex; justify-content: center; align-items: center;
-    font-size: 24px; cursor: pointer; border: 2px solid #ccc;
-  }
-  .box.wrong { background: #f88; }
-  .box.correct { background: #8f8; }
-  #controls { margin-top: 20px; }
-</style>
+  <meta charset="UTF-8" />
+  <title>我是AI小工程師</title>
+  <style>
+    body { font-family: "Microsoft JhengHei", sans-serif; padding: 20px; background: #f0f8ff; }
+    h1, h2 { color: #333; }
+    section { margin-bottom: 40px; }
+    #chatbox { border: 1px solid #ccc; background: #fff; padding: 10px; height: 200px; overflow-y: scroll; }
+    .user { color: blue; }
+    .bot { color: green; }
+    button, input { padding: 8px; margin-top: 10px; }
+    #dbView { background: #eef; padding: 10px; border-radius: 5px; }
+    .flow-step { margin: 5px 0; }
+    .highlight { background: yellow; padding: 2px 4px; }
+  </style>
 </head>
 <body>
 
-<h1>找出藏著寶藏的格子！</h1>
-<p>選擇一種演算法來搜尋寶藏：</p>
+  <h1>🤖 我是AI小工程師</h1>
+  <p>跟機器人聊天，然後看看它是怎麼「想出答案」的吧！</p>
 
-<div id="controls">
-  <button onclick="startGame('random')">隨機搜尋</button>
-  <button onclick="startGame('linear')">線性搜尋</button>
-  <button onclick="startGame('hint')">提示搜尋</button>
-</div>
+  <!-- 第一關：猜關鍵字 -->
+  <section>
+    <h2>🔍 第一關：猜猜演算法在看什麼</h2>
+    <div id="chatbox"></div>
+    <input type="text" id="userInput" placeholder="輸入你的問題..." />
+    <button onclick="handleChat()">送出</button>
+    <div id="quizArea" style="margin-top: 15px;"></div>
+  </section>
 
-<div class="box-container" id="boxContainer"></div>
-<p id="status"></p>
+  <!-- 第二關：觀察資料庫與流程 -->
+  <section>
+    <h2>🧠 第二關：AI的回應資料庫和演算法</h2>
+    <details>
+      <summary>點我查看回應資料庫</summary>
+      <div id="dbView"></div>
+    </details>
+    <button onclick="simulateAlgorithm()">🔄 模擬一次演算法流程</button>
+    <div id="flow"></div>
+  </section>
 
-<script>
-const container = document.getElementById('boxContainer');
-const statusText = document.getElementById('status');
-const totalBoxes = 9;
-let treasureIndex = -1;
-let mode = '';
-let boxes = [];
-let linearIndex = 0;
-let gameOver = false;
+  <!-- 第三關：我來當AI設計師 -->
+  <section>
+    <h2>🎨 第三關：你來當AI設計師</h2>
+    <input id="newKey" placeholder="輸入關鍵字" />
+    <input id="newResp1" placeholder="回應1" />
+    <input id="newResp2" placeholder="回應2" />
+    <button onclick="addNewKeyword()">➕ 新增</button>
+  </section>
 
-function startGame(selectedMode) {
-  mode = selectedMode;
-  treasureIndex = Math.floor(Math.random() * totalBoxes);
-  container.innerHTML = '';
-  statusText.textContent = `目前模式：${getModeName(mode)}`;
-  boxes = [];
-  linearIndex = 0;
-  gameOver = false;
+  <script>
+    let database = {
+      "你好": ["哈囉！很高興見到你！", "嗨！今天心情如何？"],
+      "天氣": ["今天天氣不錯唷～", "記得帶傘，可能會下雨。"],
+      "你是誰": ["我是小小AI聊天機器人！", "我是一個簡單的機器人，正在學習回答問題！"],
+      "學習": ["學習是一件有趣的事！", "你喜歡哪一科呢？"],
+      "再見": ["掰掰！下次再聊～", "祝你有美好的一天！"]
+    };
 
-  for (let i = 0; i < totalBoxes; i++) {
-    const box = document.createElement('div');
-    box.classList.add('box');
-    box.textContent = i + 1;
-    box.dataset.index = i;
-    box.addEventListener('click', handleClick);
-    container.appendChild(box);
-    boxes.push(box);
-  }
+    function handleChat() {
+      const input = document.getElementById("userInput").value;
+      const chatbox = document.getElementById("chatbox");
+      chatbox.innerHTML += `<div class="user">你：${input}</div>`;
 
-  if (mode === 'random') {
-    statusText.textContent += '（可任意點選格子）';
-  } else if (mode === 'linear') {
-    statusText.textContent += '（請依序從1開始點選）';
-  } else if (mode === 'hint') {
-    statusText.textContent += '（根據提示找出正確格子）';
-  }
-}
-
-function getModeName(mode) {
-  switch (mode) {
-    case 'random': return '隨機搜尋';
-    case 'linear': return '線性搜尋';
-    case 'hint': return '提示搜尋';
-    default: return '';
-  }
-}
-
-function handleClick(e) {
-  if (gameOver) return;
-
-  const index = parseInt(e.target.dataset.index);
-
-  if (mode === 'linear' && index !== linearIndex) {
-    alert(`請依序點選第 ${linearIndex + 1} 格子！`);
-    return;
-  }
-
-  if (index === treasureIndex) {
-    e.target.classList.add('correct');
-    gameOver = true;
-    setTimeout(() => {
-      const answer = prompt(`你找到了寶藏！這是哪一種搜尋？\n目前模式：${getModeName(mode)}\n請輸入你學到的：`);
-      if (answer) {
-        alert('太棒了！你輸入的是：' + answer);
+      let foundKey = null;
+      for (let key in database) {
+        if (input.includes(key)) {
+          foundKey = key;
+          const reply = database[key];
+          const botReply = reply[Math.floor(Math.random() * reply.length)];
+          chatbox.innerHTML += `<div class="bot">機器人：${botReply}</div>`;
+          break;
+        }
       }
-    }, 100);
-  } else {
-    e.target.classList.add('wrong');
-    e.target.removeEventListener('click', handleClick);
-    if (mode === 'linear') {
-      linearIndex++;
+
+      if (!foundKey) {
+        chatbox.innerHTML += `<div class="bot">機器人：我還聽不懂這句話，可以換個方式問我嗎？</div>`;
+        document.getElementById("quizArea").innerHTML = "";
+      } else {
+        // 顯示猜關鍵字的選項
+        const quiz = Object.keys(database).map(k => 
+          `<button onclick="checkGuess('${foundKey}', '${k}')">${k}</button>`
+        ).join(" ");
+        document.getElementById("quizArea").innerHTML = 
+          `<p>🧠 你猜，機器人抓到的是哪個關鍵字？</p>${quiz}`;
+      }
+
+      document.getElementById("userInput").value = "";
+      chatbox.scrollTop = chatbox.scrollHeight;
     }
-  }
-}
-</script>
+
+    function checkGuess(correct, guess) {
+      if (correct === guess) {
+        document.getElementById("quizArea").innerHTML = 
+          `<p style="color: green;">✅ 沒錯！它是根據「<strong>${correct}</strong>」來回答的！</p>`;
+      } else {
+        document.getElementById("quizArea").innerHTML = 
+          `<p style="color: red;">❌ 不是唷，正確是「<strong>${correct}</strong>」！</p>`;
+      }
+    }
+
+    function simulateAlgorithm() {
+      const flow = document.getElementById("flow");
+      flow.innerHTML = `
+        <div class="flow-step">1️⃣ 使用者輸入：<span class="highlight">你是誰</span></div>
+        <div class="flow-step">2️⃣ AI 比對每個關鍵字：找到「你是誰」✅</div>
+        <div class="flow-step">3️⃣ 從資料庫中選一個回答：<strong>${database["你是誰"][0]}</strong></div>
+      `;
+    }
+
+    function addNewKeyword() {
+      const key = document.getElementById("newKey").value;
+      const r1 = document.getElementById("newResp1").value;
+      const r2 = document.getElementById("newResp2").value;
+      if (key && r1 && r2) {
+        database[key] = [r1, r2];
+        alert(`已新增關鍵字「${key}」！可以來試試問它囉～`);
+        showDatabase();
+        document.getElementById("newKey").value = "";
+        document.getElementById("newResp1").value = "";
+        document.getElementById("newResp2").value = "";
+      }
+    }
+
+    function showDatabase() {
+      const view = Object.entries(database)
+        .map(([k, v]) => `<strong>${k}</strong>：${v.join(" / ")}`)
+        .join("<br>");
+      document.getElementById("dbView").innerHTML = view;
+    }
+
+    showDatabase(); // 初始載入資料庫顯示
+  </script>
 
 </body>
 </html>
